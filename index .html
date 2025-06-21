@@ -1,0 +1,414 @@
+<meta name='viewport' content='width=device-width, initial-scale=1'/><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Basic Calculator</title>
+    <style>
+        /* CSS styling for the page and calculator */
+        body {
+            font-family: 'Roboto', sans-serif; /* Changed font for a modern look */
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        .intro-section {
+            text-align: center;
+            margin-bottom: 50px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            max-width: 600px;
+            width: 100%;
+        }
+
+        .intro-section h1 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .intro-section p {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        #toggleCalculatorBtn {
+            background-color: #4CAF50; /* Green for Open */
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 20px;
+            margin-bottom: 50px;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        }
+
+        #toggleCalculatorBtn:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+
+        /* Calculator specific styles */
+        .calculator-container {
+            background-color: #fff;
+            padding: 20px; /* Reduced padding slightly */
+            border-radius: 20px; /* More rounded corners like the image */
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15); /* More prominent shadow */
+            width: 100%;
+            max-width: 350px; /* Adjusted max-width to be closer to phone calculator */
+            text-align: center;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: opacity 0.6s ease-out, max-height 0.6s ease-out;
+        }
+
+        .calculator-container.visible {
+            opacity: 1;
+            max-height: 700px; /* Increased max-height to ensure all content fits */
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 15px; /* Adjusted margin */
+            font-size: 1.5em;
+        }
+
+        /* Display area */
+        .display-area {
+            background-color: #f4f4f4; /* Light grey background for display */
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05); /* Inner shadow for depth */
+            text-align: right;
+            overflow: hidden; /* To handle long text */
+        }
+
+        #calculation-history {
+            min-height: 1.2em; /* Ensure some height for history */
+            color: #888; /* Lighter color for history */
+            font-size: 1.2em; /* Smaller font for history */
+            margin-bottom: 5px;
+            word-wrap: break-word; /* Wrap long calculations */
+        }
+
+        #current-display {
+            min-height: 1.5em; /* Ensure height for current input */
+            color: #333; /* Darker color for current input/result */
+            font-size: 2.5em; /* Larger font for current input/result */
+            font-weight: bold;
+            word-wrap: break-word; /* Wrap long numbers */
+        }
+
+        .calculator-buttons {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px; /* Increased gap between buttons */
+            margin-top: 20px;
+        }
+
+        .calculator-buttons button {
+            background-color: #e0e0e0; /* Light grey for number buttons */
+            color: #333;
+            padding: 20px; /* Increased padding for larger buttons */
+            border: none; /* No border */
+            border-radius: 50%; /* Make buttons circular */
+            cursor: pointer;
+            font-size: 1.8em; /* Larger font for button text */
+            transition: background-color 0.2s ease, transform 0.1s ease;
+            width: 70px; /* Fixed width for circular buttons */
+            height: 70px; /* Fixed height for circular buttons */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: auto; /* Center buttons in grid cell */
+        }
+
+        .calculator-buttons button:active { /* Pressed state */
+            transform: scale(0.95);
+        }
+
+        .calculator-buttons button:hover {
+            background-color: #d0d0d0;
+        }
+
+        .calculator-buttons button.operator {
+            background-color: #f7a000; /* Orange for operators */
+            color: white;
+        }
+
+        .calculator-buttons button.operator:hover {
+            background-color: #e69100;
+        }
+        
+        /* Specific styles for AC, %, Backspace (similar to image) */
+        .calculator-buttons button.control {
+            background-color: #d0d0d0; /* Slightly darker grey for control buttons */
+            color: #333;
+        }
+        .calculator-buttons button.control:hover {
+            background-color: #c0c0c0;
+        }
+
+        .calculator-buttons button.equal {
+            background-color: #f7a000; /* Orange for Equal button */
+            color: white;
+            /* Make equal button span two columns for aesthetic, if needed, or keep it circular */
+            /* If you want it rectangular like the image, remove border-radius: 50% and adjust width */
+             grid-column: span 1; /* Keeping it in one column for now as circular */
+             width: 70px; /* Ensure consistency */
+             height: 70px;
+        }
+
+        .calculator-buttons button.equal:hover {
+            background-color: #e69100;
+        }
+
+        /* Adjustments for the '0' button if it spans two columns */
+        .calculator-buttons button.zero {
+            grid-column: span 2; /* Make '0' span two columns */
+            border-radius: 35px; /* Half of height for rounded caps */
+            width: 152px; /* Approx (70*2 + 12) to span two circular buttons + gap */
+            text-align: left; /* Align text to left */
+            padding-left: 25px; /* Add padding for alignment */
+            justify-content: flex-start; /* Align content to start */
+        }
+    </style>
+</head>
+<body>
+
+    <div class="intro-section">
+        <h1>Welcome to the Basic Calculator!</h1>
+        <p>Click the button below to open or close our simple calculator for basic math operations.</p>
+    </div>
+
+    <button id="toggleCalculatorBtn">Open Basic Calculator</button>
+
+    <div class="calculator-container" id="calculatorContainer">
+        <h2>Basic Arithmetic</h2>
+        <div class="display-area">
+            <div id="calculation-history"></div>
+            <div id="current-display">0</div>
+        </div>
+        <div class="calculator-buttons">
+            <button class="control" onclick="clearAll()">AC</button>
+            <button class="control" onclick="appendOperator('%')">%</button> <button class="control" onclick="backspace()">DEL</button> <button class="operator" onclick="appendOperator('/')">÷</button>
+
+            <button onclick="appendNumber('7')">7</button>
+            <button onclick="appendNumber('8')">8</button>
+            <button onclick="appendNumber('9')">9</button>
+            <button class="operator" onclick="appendOperator('*')">×</button>
+
+            <button onclick="appendNumber('4')">4</button>
+            <button onclick="appendNumber('5')">5</button>
+            <button onclick="appendNumber('6')">6</button>
+            <button class="operator" onclick="appendOperator('-')">-</button>
+
+            <button onclick="appendNumber('1')">1</button>
+            <button onclick="appendNumber('2')">2</button>
+            <button onclick="appendNumber('3')">3</button>
+            <button class="operator" onclick="appendOperator('+')">+</button>
+
+            <button class="zero" onclick="appendNumber('0')">0</button> <button onclick="appendNumber('.')">.</button>
+            <button class="equal" onclick="calculateResult()">=</button>
+        </div>
+    </div>
+
+    <script>
+        let currentInput = '0';
+        let operator = '';
+        let previousInput = '';
+        let calculationHistory = ''; // To store the full calculation for display
+        let resultDisplayed = false; // Flag to know if a result is currently shown
+
+        const currentDisplayElement = document.getElementById('current-display');
+        const historyDisplayElement = document.getElementById('calculation-history');
+
+        // Helper to format numbers with commas (like 7,350)
+        function formatNumber(numStr) {
+            // Check if it's a number and convert to string
+            if (typeof numStr !== 'string') {
+                numStr = String(numStr);
+            }
+            // Handle decimals separately
+            const parts = numStr.split('.');
+            // Add commas to the integer part
+            parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+            // Join back with decimal part if it exists
+            return parts.join('.');
+        }
+
+        // Update both display elements
+        function updateDisplay() {
+            currentDisplayElement.textContent = formatNumber(currentInput);
+            historyDisplayElement.textContent = calculationHistory;
+        }
+
+        // AC button: Clear all
+        function clearAll() {
+            currentInput = '0';
+            operator = '';
+            previousInput = '';
+            calculationHistory = '';
+            resultDisplayed = false;
+            updateDisplay();
+        }
+
+        // DEL button: Backspace
+        function backspace() {
+            if (resultDisplayed) { // If result is displayed, clear it
+                clearAll();
+                return;
+            }
+            currentInput = currentInput.slice(0, -1); // Remove last character
+            if (currentInput === '' || currentInput === '-') { // If empty or just minus, set to '0'
+                currentInput = '0';
+            }
+            updateDisplay();
+        }
+
+        function appendNumber(number) {
+            if (resultDisplayed) { // If a result was just displayed, start a new calculation
+                currentInput = number;
+                calculationHistory = ''; // Clear history for new calculation
+                resultDisplayed = false;
+            } else if (currentInput === '0' && number !== '.') {
+                currentInput = number;
+            } else if (number === '.' && currentInput.includes('.')) {
+                return; // Do nothing if '.' is already present
+            } else {
+                currentInput += number;
+            }
+            updateDisplay();
+        }
+
+        function appendOperator(op) {
+            if (op === '%') {
+                if (currentInput === '0' || resultDisplayed) {
+                    // Cannot apply percentage to 0 or directly after a result without an operation
+                    return;
+                }
+                const num = parseFloat(currentInput);
+                if (isNaN(num)) {
+                    currentInput = 'Error';
+                    calculationHistory = '';
+                } else {
+                    currentInput = (num / 100).toString();
+                    calculationHistory = formatNumber(num) + '%'; // Update history for percentage
+                }
+                resultDisplayed = true; // Percentage calculation can be treated as a result
+                updateDisplay();
+                return; // Exit as percentage is a direct operation on current input
+            }
+
+
+            if (operator !== '' && !resultDisplayed && previousInput !== '') {
+                // If there's a pending operation, calculate first
+                calculateResult();
+                previousInput = currentInput; // Use the result as previous input for next operation
+            } else {
+                previousInput = currentInput;
+            }
+            operator = op;
+            // Update history to show previous number and operator
+            calculationHistory = formatNumber(previousInput) + ' ' + operator;
+            currentInput = '0'; // Reset current input for the next number
+            resultDisplayed = false; // Allow new numbers after operator
+            updateDisplay();
+        }
+
+        function calculateResult() {
+            if (previousInput === '' || operator === null || resultDisplayed) {
+                return; // Nothing to calculate or already displayed result
+            }
+
+            let result;
+            const num1 = parseFloat(previousInput);
+            const num2 = parseFloat(currentInput);
+
+            if (isNaN(num1) || isNaN(num2)) {
+                currentInput = 'Error';
+                calculationHistory = ''; // Clear history on error
+                updateDisplay();
+                resultDisplayed = true;
+                return;
+            }
+
+            // Update history for the calculation before performing it
+            calculationHistory = formatNumber(previousInput) + ' ' + operator + ' ' + formatNumber(currentInput);
+
+            switch (operator) {
+                case '+':
+                    result = num1 + num2;
+                    break;
+                case '-':
+                    result = num1 - num2;
+                    break;
+                case '*':
+                    result = num1 * num2;
+                    break;
+                case '/':
+                    if (num2 === 0) {
+                        currentInput = 'Error: Div by zero';
+                        calculationHistory = '';
+                        updateDisplay();
+                        resultDisplayed = true;
+                        return;
+                    }
+                    result = num1 / num2;
+                    break;
+                default:
+                    // If no valid operator, just show current input as result
+                    currentInput = currentInput;
+                    operator = null;
+                    previousInput = '';
+                    resultDisplayed = true;
+                    updateDisplay();
+                    return;
+            }
+
+            currentInput = result.toString();
+            operator = null;
+            previousInput = ''; // Clear previous input after calculation
+            resultDisplayed = true; // Mark that a result is now displayed
+            updateDisplay();
+        }
+
+        // Toggle functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const toggleCalculatorBtn = document.getElementById('toggleCalculatorBtn');
+            const calculatorContainer = document.getElementById('calculatorContainer');
+
+            toggleCalculatorBtn.addEventListener('click', function() {
+                const isVisible = calculatorContainer.classList.toggle('visible');
+
+                if (isVisible) {
+                    toggleCalculatorBtn.textContent = 'Close Basic Calculator';
+                    toggleCalculatorBtn.style.backgroundColor = '#dc3545'; /* Red for Close */
+                    calculatorContainer.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
+                } else {
+                    toggleCalculatorBtn.textContent = 'Open Basic Calculator';
+                    toggleCalculatorBtn.style.backgroundColor = '#4CAF50'; /* Green for Open */
+                    // Clear calculator state when closing
+                    clearAll(); // Use clearAll to reset everything
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>
